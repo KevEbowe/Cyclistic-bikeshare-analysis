@@ -15,6 +15,8 @@ For this business task, i would be using the most recent data, collected from\ t
 
 For this analysis, R programming language was used due to the large size of the datasets. Tableau was also used for visualizing the data.
 
+![tableau_dashboard](https://user-images.githubusercontent.com/116027848/217668009-6e1320cb-7243-42ba-a59d-57e5e038694c.png)
+
 
 KEY FINDINGS
 
