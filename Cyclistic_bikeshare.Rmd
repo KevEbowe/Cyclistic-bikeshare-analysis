@@ -121,7 +121,8 @@ view(comb_trips$ride_length)
 
 ```{r}
 comb_trips <- comb_trips %>% 
-  filter(!is.na(start_station_name))%>%                               filter(!is.na(end_station_name))#filtering out null values from start_station_name and end_station_name
+  filter(!is.na(start_station_name))%>%   
+  filter(!is.na(end_station_name))#filtering out null values from start_station_name and end_station_name
   
 ```
 ```{r}
@@ -178,7 +179,6 @@ comb_trips_v2 %>%
 ```
 
 
-```
 ```{r}
 #exporting the dataframe as a file into my local machine for visualization on tableau
 write.csv(comb_trips_v2,"C:\\Users\\user\\Documents\\coursera_cyclistic_trips_project_max.csv",row.names=TRUE)
