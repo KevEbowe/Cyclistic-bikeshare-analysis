@@ -1,0 +1,186 @@
+---
+title: "Cylistic Bike Rides Analysis"
+author: "Kevin Ebowe"
+date: "2023-01-04"
+output: html_notebook
+---
+INTRODUCTION:
+This analysis was carried out on cyclistic bikes data from the last 12 month; december 2021 to November 2022.The purpose of this analysis was to identify user habits of customers of cyclistic bikes to determine best practices for improving generated revenue.
+
+
+```{r}
+#installing and loading the required R packages for this analysis
+install.packages("tidyverse")
+install.packages("lubridate")
+install.packages("ggplot2")
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+
+```
+
+
+```{r}
+setwd("C:/Users/user/Documents/coursera_bike_data")#setting working directory to the file location
+
+#reading the files into seperate dataframes
+mt1_trips <- read_csv("202112-divvy-tripdata.csv")
+mt2_trips <- read_csv("202201-divvy-tripdata.csv")
+mt3_trips <- read_csv("202202-divvy-tripdata.csv")
+mt4_trips <- read_csv("202203-divvy-tripdata.csv")
+mt5_trips <- read_csv("202204-divvy-tripdata.csv")
+mt6_trips <- read_csv("202205-divvy-tripdata.csv")
+mt7_trips <- read_csv("202206-divvy-tripdata.csv")
+mt8_trips <- read_csv("202207-divvy-tripdata.csv")
+mt9_trips <- read_csv("202208-divvy-tripdata.csv")
+mt10_trips <- read_csv("202209-divvy-tripdata.csv")
+mt11_trips <- read_csv("202210-divvy-tripdata.csv")
+mt12_trips <- read_csv("202211-divvy-tripdata.csv")
+
+```
+
+DATA WRANGLING
+
+```{r}
+#changing the datatypes of "ride_id" and "rideable_type" to string
+mt1_trips <- mutate(mt1_trips,ride_id=as.character(ride_id),rideable_type=as.character(rideable_type))
+mt2_trips <- mutate(mt2_trips,ride_id=as.character(ride_id),rideable_type=as.character(rideable_type))
+mt3_trips <- mutate(mt3_trips,ride_id=as.character(ride_id),rideable_type=as.character(rideable_type))
+mt4_trips <- mutate(mt4_trips,ride_id=as.character(ride_id),rideable_type=as.character(rideable_type))
+mt5_trips <- mutate(mt5_trips,ride_id=as.character(ride_id),rideable_type=as.character(rideable_type))
+mt6_trips <- mutate(mt6_trips,ride_id=as.character(ride_id),rideable_type=as.character(rideable_type))
+mt7_trips <- mutate(mt7_trips,ride_id=as.character(ride_id),rideable_type=as.character(rideable_type))
+mt8_trips <- mutate(mt8_trips,ride_id=as.character(ride_id),rideable_type=as.character(rideable_type))
+mt9_trips <- mutate(mt9_trips,ride_id=as.character(ride_id),rideable_type=as.character(rideable_type))
+mt10_trips <- mutate(mt10_trips,ride_id=as.character(ride_id),rideable_type=as.character(rideable_type))
+mt11_trips <- mutate(mt11_trips,ride_id=as.character(ride_id),rideable_type=as.character(rideable_type))
+mt12_trips <- mutate(mt12_trips,ride_id=as.character(ride_id),rideable_type=as.character(rideable_type))
+
+```
+
+
+```{r}
+#Join all the dataframes into a single large dataframe using bind _rows function
+comb_trips <- bind_rows(mt1_trips,mt2_trips,mt3_trips,mt4_trips,mt5_trips,mt6_trips,mt7_trips,mt8_trips,mt9_trips,mt10_trips,mt11_trips,mt12_trips)
+```
+
+```{r}
+#renaming "subscriber" and "customer" into "member" and "casual" respectively for data consistency
+comb_trips <-  comb_trips %>% 
+  mutate(member_casual = recode(member_casual
+                           ,"Subscriber" = "member"
+                           ,"Customer" = "casual"))
+
+```
+
+```{r}
+#checking the member_casual column to confirm changes made
+table(comb_trips$member_casual)
+```
+
+```{r}
+
+comb_trips$date <- as.Date(comb_trips$started_at,"%m/%d/%Y")#extracting date column from started_at
+comb_trips$month <- format(as.Date(comb_trips$date), "%m")#extracting month column from started_at
+comb_trips$day <- format(as.Date(comb_trips$date), "%d")#extracting day column from started_at
+comb_trips$year <- format(as.Date(comb_trips$date), "%Y")#extracting year column from started_at
+comb_trips$day_of_week <- format(as.Date(comb_trips$date), "%A")#extracting day_of_week column from started_at
+
+
+```
+
+```{r}
+
+comb_trips<-mutate(comb_trips,started_at = mdy_hms(started_at))#using lubridate library to format started_at column 
+
+comb_trips<-mutate(comb_trips,ended_at = mdy_hms(ended_at))#using lubridate library to format ended_at column 
+comb_trips <- mutate(comb_trips,hour_of_day=hour(started_at))#extracting hour column from started_at
+
+```
+
+```{r}
+comb_trips$ride_length <-difftime(comb_trips$ended_at,comb_trips$started_at,units='mins')#using POSIXct to create ride length column 
+
+
+```
+
+
+```{r}
+is.factor(comb_trips$ride_length)
+comb_trips$ride_length <- as.numeric(as.character(comb_trips$ride_length))
+is.numeric(comb_trips$ride_length)
+
+```
+
+```{r}
+#inspecting the dataframe
+view(comb_trips$ride_length)
+
+```
+
+
+```{r}
+comb_trips <- comb_trips %>% 
+  filter(!is.na(start_station_name))%>%                               filter(!is.na(end_station_name))#filtering out null values from start_station_name and end_station_name
+  
+```
+```{r}
+comb_trips <- comb_trips %>%
+  filter(ride_length >0) #filtering out ride lengths with negative values
+  
+```
+
+
+
+
+```{r}
+#storing the cleaned data in a new dataframe 
+comb_trips_v2 <- comb_trips[!(comb_trips$start_station_name == "HQ QR"),]
+
+```
+
+
+DESCRIPTIVE ANALYSIS
+
+```{r}
+aggregate(comb_trips_v2$ride_length ~ comb_trips_v2$member_casual, FUN = mean)#average ride length for each usertype
+aggregate(comb_trips_v2$ride_length ~ comb_trips_v2$member_casual, FUN = median)#finding the nedian ride length for eeach usertype
+aggregate(comb_trips_v2$ride_length ~ comb_trips_v2$member_casual, FUN = max)#finding the maximun ride length for each usertype
+aggregate(comb_trips_v2$ride_length ~ comb_trips_v2$member_casual, FUN = min)#findingn the minimum ride length for each usertype
+
+
+```
+
+```{r}
+comb_trips_v2$day_of_week <- ordered(comb_trips_v2$day_of_week, levels=c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))#creating an order for the column "day_of_week"
+
+```
+
+
+```{r}
+aggregate(comb_trips_v2$ride_length ~ comb_trips_v2$member_casual + comb_trips_v2$day_of_week, FUN = mean)#finding the average ride length for each usertype for every day of the week
+aggregate(comb_trips_v2$ride_length ~ comb_trips_v2$member_casual + comb_trips_v2$day_of_week, FUN = median)#finding the median ride length for each usertype for every day of the week
+aggregate(comb_trips_v2$ride_length ~ comb_trips_v2$member_casual + comb_trips_v2$day_of_week, FUN = max)#finding the maximum ride length for each usertype for every day of the week
+aggregate(comb_trips_v2$ride_length ~ comb_trips_v2$member_casual + comb_trips_v2$day_of_week, FUN = min)#finding the minimum ride length for each usertype for every day of the week
+
+```
+
+```{r}
+# analyze ridership data by usertype and weekday
+comb_trips_v2 %>% 
+  mutate(weekday = wday(started_at, label = TRUE)) %>%
+  group_by(member_casual, weekday) %>%
+  summarise(number_of_rides = n()
+  ,average_duration = mean(ride_length)) %>% 
+  arrange(member_casual, weekday)
+
+
+```
+
+
+```
+```{r}
+#exporting the dataframe as a file into my local machine for visualization on tableau
+write.csv(comb_trips_v2,"C:\\Users\\user\\Documents\\coursera_cyclistic_trips_project_max.csv",row.names=TRUE)
+
+```
