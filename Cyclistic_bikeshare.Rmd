@@ -5,7 +5,8 @@ date: "2023-01-04"
 output: html_notebook
 ---
 INTRODUCTION:
-This analysis was carried out on cyclistic bikes data from the last 12 month; december 2021 to November 2022.The purpose of this analysis was to identify user habits of customers of cyclistic bikes to determine best practices for improving generated revenue.
+This analysis was carried out on cyclistic bikes data from the last 12 month; december 2021 to November 2022.
+The purpose of this analysis was to identify user habits of customers of cyclistic bikes to determine best practices for improving generated revenue.
 
 
 ```{r}
